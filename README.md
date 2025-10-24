@@ -2,7 +2,8 @@
 
 ## Overview
 
-This project implements FIDO UAF (Universal Authentication Framework) and WebAuthn/FIDO2 authentication protocols using Spring Boot. It is a derivative work based on open-source projects.
+This project implements the FIDO UAF and WebAuthn/FIDO2 authentication standards using Spring Boot and Java 21.
+It builds upon and improves several open-source projects.
 
 ## Attribution
 
@@ -24,7 +25,7 @@ All original works are used in accordance with their respective Apache 2.0 licen
 
 **Prerequisites:**
 
-**Java 17**: This project uses Java 17. If you don't have Java 17, you can install OpenJDK. Instructions are found on the [OpenJDK website](https://openjdk.java.net/install/).
+**Java 21**: This project uses Java 21. If you don't have Java 21, you can install OpenJDK. Instructions are found on the [OpenJDK website](https://aws.amazon.com/tw/corretto/).
 
 * [Getting Started](#getting-started)
 * [Start the Apps](#start-the-apps)
@@ -35,7 +36,7 @@ All original works are used in accordance with their respective Apache 2.0 licen
 
 This derivative work includes the following enhancements:
 
-* **Upgraded to Java 17** and **Spring Boot 3.5.5**
+* **Upgraded to Java 21** and **Spring Boot 3.5.5**
 * **Keycloak integration** for centralized identity management
 * **Dual protocol support** for both WebAuthn (FIDO2) and UAF (FIDO UAF 1.0)
 * **Modern architecture** with improved security and performance
@@ -47,7 +48,7 @@ This derivative work includes the following enhancements:
 To install this example application, run the following commands:
 
 ```bash
-git clone [your-repository-url]
+git clone https://github.com/BenzeneSnake/fido-uaf-server
 cd fido-uaf-server
 ```
 
