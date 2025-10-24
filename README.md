@@ -18,8 +18,9 @@ This project is based on and incorporates code from:
 2. **eBay UAF (Universal Authentication Framework)**
    - Original repository: https://github.com/eBay/UAF
    - Copyright (c) 2015 eBay Inc.
-   - Licensed under the Apache License 2.0
-   - Provides FIDO UAF protocol implementation
+   - Licensed under the Apache License, Version 2.0
+   - Provides the reference implementation of the FIDO UAF protocol.
+   - Portions of this project are derived from or based on the original eBay UAF implementation.
 
 All original works are used in accordance with their respective Apache 2.0 licenses.
 
@@ -77,8 +78,11 @@ For a complete list of dependencies, see [pom.xml](pom.xml).
 
 ## License
 
-This project is licensed under the **Apache License 2.0** - see the [LICENSE](LICENSE) file for details.
+This project includes code derived from [eBay UAF](https://github.com/eBay/UAF),
+which is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
+All modifications made to the original source are noted within the code and documentation.
+© 2025 YourName. Licensed under the Apache License, Version 2.0.
 ### Important License Information
 
 This is a derivative work incorporating code from:
