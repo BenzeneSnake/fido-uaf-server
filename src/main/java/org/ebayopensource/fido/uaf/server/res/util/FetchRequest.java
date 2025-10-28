@@ -20,7 +20,9 @@ import org.ebayopensource.fido.uaf.core.msg.AuthenticationRequest;
 import org.ebayopensource.fido.uaf.core.msg.RegistrationRequest;
 import org.ebayopensource.fido.uaf.core.ops.AuthenticationRequestGeneration;
 import org.ebayopensource.fido.uaf.core.ops.RegistrationRequestGeneration;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FetchRequest {
 
 	private String appId;
