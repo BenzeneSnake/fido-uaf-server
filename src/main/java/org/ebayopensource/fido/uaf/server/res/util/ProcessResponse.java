@@ -22,7 +22,9 @@ import org.ebayopensource.fido.uaf.core.ops.AuthenticationResponseProcessing;
 import org.ebayopensource.fido.uaf.core.ops.RegistrationResponseProcessing;
 import org.ebayopensource.fido.uaf.core.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.core.storage.RegistrationRecord;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ProcessResponse {
 
 	private static final int SERVER_DATA_EXPIRY_IN_MS = 5 * 60 * 1000;

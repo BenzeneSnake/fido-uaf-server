@@ -20,9 +20,11 @@ import org.ebayopensource.fido.uaf.core.msg.DeregisterAuthenticator;
 import org.ebayopensource.fido.uaf.core.msg.DeregistrationRequest;
 import org.ebayopensource.fido.uaf.core.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.server.stats.Dash;
+import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 
+@Service
 public class DeregRequestProcessor {
 	private Gson gson = new Gson();
 
