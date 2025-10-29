@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAF Integration Test - Mobile Friendly</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .phase {
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .phase:last-child {
+            border-bottom: none;
+        }
+
+        .phase-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .phase-badge {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 8px;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:active {
+            background: #4451b8;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.secondary:hover {
+            background: #5a6268;
+        }
+
+        .result-box {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+        }
+
+        .result-box.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result-box.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .status-indicator.pending {
+            background: #ffc107;
+        }
+
+        .status-indicator.success {
+            background: #28a745;
+        }
+
+        .status-indicator.error {
+            background: #dc3545;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #1976D2;
+        }
+
+        .endpoint {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #eee;
+            border-radius: 2px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>UAF 整合測試工具</h1>
+        <p class="subtitle">手機友善版 - 漸進式測試介面</p>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+
+        <!-- Phase 1: 基礎 API 測試 -->
+        <div class="phase">
+            <div class="phase-title">
+                <span class="phase-badge">1</span>
+                <span>基礎 API 測試</span>
+            </div>
+
+            <div class="info-box">
+                測試後端是否正常運作，不需要 UAF 客戶端
+            </div>
+
+            <div class="endpoint">GET /api/uaf/v1/public/facets</div>
+
+            <button onclick="testFacets()">測試 Facets 端點</button>
+            <div id="result-facets" class="result-box"></div>
+
+            <div class="endpoint" style="margin-top: 12px;">GET /api/uaf/v1/public/regRequest/{username}</div>
+
+            <div class="input-group">
+                <label>測試用戶名稱</label>
+                <input type="text" id="testUsername" value="testuser" placeholder="輸入用戶名稱">
+            </div>
+
+            <button onclick="testRegistrationRequest()">測試註冊請求生成</button>
+            <div id="result-reg-request" class="result-box"></div>
+        </div>
+
+        <!-- Phase 2: WebAuthn 驗證 -->
+        <div class="phase">
+            <div class="phase-title">
+                <span class="phase-badge">2</span>
+                <span>WebAuthn 驗證測試</span>
+            </div>
+
+            <div class="info-box">
+                使用瀏覽器原生 WebAuthn 測試整體架構
+            </div>
+
+            <button onclick="window.location.href='/register'">前往 WebAuthn 註冊</button>
+            <button onclick="window.location.href='/login'" class="secondary">前往 WebAuthn 登入</button>
+        </div>
+
+        <!-- Phase 3: UAF 流程模擬 -->
+        <div class="phase">
+            <div class="phase-title">
+                <span class="phase-badge">3</span>
+                <span>UAF 流程模擬</span>
+            </div>
+
+            <div class="info-box">
+                模擬 UAF 客戶端行為，測試完整流程
+            </div>
+
+            <div class="input-group">
+                <label>UAF 測試用戶</label>
+                <input type="text" id="uafUsername" value="uafuser" placeholder="輸入用戶名稱">
+            </div>
+
+            <button onclick="simulateUAFRegistration()">模擬 UAF 註冊流程</button>
+            <div id="result-uaf-reg" class="result-box"></div>
+
+            <button onclick="simulateUAFAuthentication()" class="secondary" style="margin-top: 12px;">模擬 UAF 認證流程</button>
+            <div id="result-uaf-auth" class="result-box"></div>
+        </div>
+
+        <!-- Phase 4: 資料庫檢查 -->
+        <div class="phase">
+            <div class="phase-title">
+                <span class="phase-badge">4</span>
+                <span>資料持久化測試</span>
+            </div>
+
+            <div class="info-box">
+                檢查資料是否正確儲存到資料庫
+            </div>
+
+            <button onclick="checkDatabase()">查詢 UAF 註冊記錄</button>
+            <div id="result-db" class="result-box"></div>
+
+            <button onclick="checkAllRegistrations()" class="secondary">查看所有註冊資料</button>
+            <div id="result-all-db" class="result-box"></div>
+        </div>
+    </div>
+
+    <script>
+        let progressSteps = 0;
+        const totalSteps = 8;
+
+        function updateProgress() {
+            progressSteps++;
+            const percentage = (progressSteps / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = percentage + '%';
+        }
+
+        function showResult(elementId, message, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.className = 'result-box show ' + (isSuccess ? 'success' : 'error');
+            element.textContent = message;
+            updateProgress();
+        }
+
+        async function testFacets() {
+            try {
+                const response = await fetch('/api/uaf/v1/public/facets', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                showResult('result-facets',
+                    '✓ Facets 端點測試成功\n\n' + JSON.stringify(data, null, 2),
+                    true);
+            } catch (error) {
+                showResult('result-facets',
+                    '✗ 測試失敗\n\n' + error.message + '\n\n提示: 確認後端是否已實作 /api/uaf/v1/public/facets 端點',
+                    false);
+            }
+        }
+
+        async function testRegistrationRequest() {
+            const username = document.getElementById('testUsername').value;
+            if (!username) {
+                showResult('result-reg-request', '✗ 請輸入用戶名稱', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/uaf/v1/public/regRequest/${username}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                showResult('result-reg-request',
+                    '✓ 註冊請求生成成功\n\n' + JSON.stringify(data, null, 2),
+                    true);
+            } catch (error) {
+                showResult('result-reg-request',
+                    '✗ 測試失敗\n\n' + error.message + '\n\n提示: 確認是否已完成第一階段代碼整合',
+                    false);
+            }
+        }
+
+        async function simulateUAFRegistration() {
+            const username = document.getElementById('uafUsername').value;
+            if (!username) {
+                showResult('result-uaf-reg', '✗ 請輸入用戶名稱', false);
+                return;
+            }
+
+            showResult('result-uaf-reg', '⏳ 正在模擬 UAF 註冊流程...', true);
+
+            try {
+                // Step 1: 取得註冊請求
+                const regReqResponse = await fetch(`/api/uaf/v1/public/regRequest/${username}`);
+                if (!regReqResponse.ok) {
+                    throw new Error('無法取得註冊請求');
+                }
+                const regRequest = await regReqResponse.json();
+
+                // Step 2: 模擬客戶端回應（這裡需要實際的 UAF 客戶端邏輯）
+                const mockResponse = {
+                    uafResponse: JSON.stringify([{
+                        header: {
+                            upv: {major: 1, minor: 0},
+                            op: "Reg",
+                            appID: "http://localhost:8080",
+                            serverData: regRequest[0].header.serverData
+                        },
+                        fcParams: "mockFcParams",
+                        assertions: [{
+                            assertion: "mockAssertion",
+                            assertionScheme: "UAFV1TLV"
+                        }]
+                    }])
+                };
+
+                // Step 3: 發送註冊回應
+                const regResResponse = await fetch('/api/uaf/v1/public/regResponse', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(mockResponse)
+                });
+
+                if (!regResResponse.ok) {
+                    throw new Error('註冊回應處理失敗');
+                }
+
+                const result = await regResResponse.json();
+                showResult('result-uaf-reg',
+                    '✓ UAF 註冊模擬完成\n\n步驟1: 取得註冊請求 ✓\n步驟2: 客戶端處理 ✓\n步驟3: 發送回應 ✓\n\n' +
+                    JSON.stringify(result, null, 2),
+                    true);
+            } catch (error) {
+                showResult('result-uaf-reg',
+                    '✗ UAF 註冊模擬失敗\n\n' + error.message + '\n\n注意: 這是簡化的模擬，實際 UAF 需要真實客戶端',
+                    false);
+            }
+        }
+
+        async function simulateUAFAuthentication() {
+            showResult('result-uaf-auth',
+                '⏳ 正在模擬 UAF 認證流程...\n\n提示: 需要先完成註冊',
+                true);
+
+            try {
+                // Step 1: 取得認證請求
+                const authReqResponse = await fetch('/api/uaf/v1/public/authRequest');
+                if (!authReqResponse.ok) {
+                    throw new Error('無法取得認證請求');
+                }
+                const authRequest = await authReqResponse.json();
+
+                // Step 2: 模擬認證回應
+                const mockAuthResponse = {
+                    uafResponse: JSON.stringify([{
+                        header: {
+                            upv: {major: 1, minor: 0},
+                            op: "Auth",
+                            appID: "http://localhost:8080",
+                            serverData: authRequest[0].header.serverData
+                        },
+                        assertions: [{
+                            assertion: "mockAuthAssertion",
+                            assertionScheme: "UAFV1TLV"
+                        }]
+                    }])
+                };
+
+                // Step 3: 發送認證回應
+                const authResResponse = await fetch('/api/uaf/v1/public/authResponse', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(mockAuthResponse)
+                });
+
+                if (!authResResponse.ok) {
+                    throw new Error('認證回應處理失敗');
+                }
+
+                const result = await authResResponse.json();
+                showResult('result-uaf-auth',
+                    '✓ UAF 認證模擬完成\n\n' + JSON.stringify(result, null, 2),
+                    true);
+            } catch (error) {
+                showResult('result-uaf-auth',
+                    '✗ UAF 認證模擬失敗\n\n' + error.message,
+                    false);
+            }
+        }
+
+        async function checkDatabase() {
+            const username = document.getElementById('uafUsername').value;
+            if (!username) {
+                showResult('result-db', '✗ 請輸入用戶名稱', false);
+                return;
+            }
+
+            try {
+                // 這個端點需要額外建立
+                const response = await fetch(`/api/uaf/v1/test/registrations/${username}`);
+                if (!response.ok) {
+                    throw new Error('查詢失敗');
+                }
+                const data = await response.json();
+                showResult('result-db',
+                    `✓ 找到 ${data.length} 筆 ${username} 的註冊記錄\n\n` +
+                    JSON.stringify(data, null, 2),
+                    true);
+            } catch (error) {
+                showResult('result-db',
+                    '✗ 查詢失敗\n\n' + error.message + '\n\n提示: 可能需要建立測試端點',
+                    false);
+            }
+        }
+
+        async function checkAllRegistrations() {
+            try {
+                const response = await fetch('/api/uaf/v1/test/registrations');
+                if (!response.ok) {
+                    throw new Error('查詢失敗');
+                }
+                const data = await response.json();
+                showResult('result-all-db',
+                    `✓ 資料庫中共有 ${data.length} 筆 UAF 註冊記錄\n\n` +
+                    JSON.stringify(data, null, 2),
+                    true);
+            } catch (error) {
+                showResult('result-all-db',
+                    '✗ 查詢失敗\n\n' + error.message,
+                    false);
+            }
+        }
+
+        // 頁面載入時的提示
+        window.addEventListener('load', function() {
+            console.log('UAF 測試工具已載入');
+            console.log('建議測試順序: Phase 1 → Phase 2 → Phase 3 → Phase 4');
+        });
+    </script>
+</body>
+</html>
