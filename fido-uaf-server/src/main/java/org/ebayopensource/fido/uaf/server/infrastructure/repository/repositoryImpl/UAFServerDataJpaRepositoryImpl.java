@@ -1,6 +1,7 @@
 package org.ebayopensource.fido.uaf.server.infrastructure.repository.repositoryImpl;
 
 import org.ebayopensource.fido.uaf.server.infrastructure.entity.UAFServerDataEntity;
+import org.ebayopensource.fido.uaf.server.infrastructure.jpa.dao.UAFServerDataDao;
 import org.ebayopensource.fido.uaf.server.infrastructure.mapper.UAFServerDataMapper;
 import org.ebayopensource.fido.uaf.server.infrastructure.model.UAFServerData;
 import org.ebayopensource.fido.uaf.server.infrastructure.repository.UAFServerDataJpaRepository;
@@ -17,47 +18,47 @@ import java.util.Optional;
 public class UAFServerDataJpaRepositoryImpl implements UAFServerDataRepository {
 
     private final UAFServerDataMapper mapper;
-    private final UAFServerDataJpaRepository jpaRepository;
+    private final UAFServerDataDao serverDataDao;
 
     @Autowired
-    public UAFServerDataJpaRepositoryImpl(UAFServerDataMapper mapper, UAFServerDataJpaRepository jpaRepository) {
+    public UAFServerDataJpaRepositoryImpl(UAFServerDataMapper mapper, UAFServerDataDao serverDataDao) {
         this.mapper = mapper;
-        this.jpaRepository = jpaRepository;
+        this.serverDataDao = serverDataDao;
     }
 
     @Override
     public UAFServerData save(UAFServerData serverData) {
         UAFServerDataEntity entity = mapper.toEntity(serverData);
-        UAFServerDataEntity savedEntity = jpaRepository.save(entity);
+        UAFServerDataEntity savedEntity = serverDataDao.save(entity);
         return mapper.toModel(savedEntity);
     }
 
     @Override
     public Optional<UAFServerData> findValidByUsername(String username) {
         LocalDateTime now = LocalDateTime.now();
-        return jpaRepository.findValidByUsername(username, now).map(mapper::toModel);
+        return serverDataDao.findValidByUsername(username, now).map(mapper::toModel);
     }
 
     @Override
     public Optional<UAFServerData> findLatestByUsername(String username) {
-        return jpaRepository.findFirstByUsernameOrderByCreatedAtDesc(username)
+        return serverDataDao.findFirstByUsernameOrderByCreatedAtDesc(username)
                 .map(mapper::toModel);
     }
 
     @Override
     public List<UAFServerData> findAllByUsername(String username) {
-        List<UAFServerDataEntity> entities = jpaRepository.findByUsername(username);
+        List<UAFServerDataEntity> entities = serverDataDao.findByUsername(username);
         return mapper.toModelList(entities);
     }
 
     @Override
     public void deleteByUsername(String username) {
-        jpaRepository.deleteByUsername(username);
+        serverDataDao.deleteByUsername(username);
     }
 
     @Override
     public int deleteExpiredData() {
         LocalDateTime now = LocalDateTime.now();
-        return jpaRepository.deleteExpiredData(now);
+        return serverDataDao.deleteExpiredData(now);
     }
 }
