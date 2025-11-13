@@ -41,12 +41,16 @@ import org.ebayopensource.fido.uaf.server.stats.Dash;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
+
 @RestController
 @RequestMapping("/v1")
 public class UAFController {
 
     @Value("${uaf.server.endpoint}")
     private String hostname;
+
+    @Value("${uaf.server.facetId}")
+    private String facetId;
 
     private final Gson gson = new Gson();
 
@@ -90,15 +94,15 @@ public class UAFController {
      * to look up an Attestation Public Key and Authenticator Metadata for the device.
      * The first 4 characters of the AAID are the vendorID.
      *
-     * @return  list of allowed AAID - Authenticator Attestation ID.
+     * @return list of allowed AAID - Authenticator Attestation ID.
      */
     // 驗證伺服器（Server）端對 Authenticator 身分的驗證白名單機制
     private String[] getAllowedAaids() {
-        String[] ret = { "EBA0#0001", "0015#0001", "0012#0002", "0010#0001",
+        String[] ret = {"EBA0#0001", "0015#0001", "0012#0002", "0010#0001",
                 "4e4e#0001", "5143#0001", "0011#0701", "0013#0001",
                 "0014#0000", "0014#0001", "53EC#C002", "DAB8#8001",
                 "DAB8#0011", "DAB8#8011", "5143#0111", "5143#0120",
-                "4746#F816", "53EC#3801" };
+                "4746#F816", "53EC#3801"};
         List<String> retList = new ArrayList<String>(Arrays.asList(ret));
         retList.addAll(Dash.getInstance().uuids);
         return retList.toArray(new String[0]);
@@ -109,7 +113,7 @@ public class UAFController {
      * An (application) facet is how an application is implemented on various
      * platforms. For example, the application MyBank may have an Android app,
      * an iOS app, and a Web app. These are all facets of the MyBank application.
-     *
+     * <p>
      * A platform-specific identifier (URI) for an application facet.
      * For Web applications, the facet id is the RFC6454 origin [RFC6454].
      * For Android applications, the facet id is the URI
@@ -123,11 +127,11 @@ public class UAFController {
     public Facets facets() {
         String timestamp = new Date().toString();
         Dash.getInstance().stats.put(Dash.LAST_REG_REQ, timestamp);
-        String[] trustedIds = { "https://www.head2toes.org",
+        String[] trustedIds = {"https://www.head2toes.org",
                 "android:apk-key-hash:Df+2X53Z0UscvUu6obxC3rIfFyk",
                 "android:apk-key-hash:bE0f1WtRJrZv/C0y9CM73bAUqiI",
                 "android:apk-key-hash:Lir5oIjf552K/XN4bTul0VS3GfM",
-                "https://openidconnect.ebay.com" };
+                "https://openidconnect.ebay.com"};
         List<String> trustedIdsList = new ArrayList<String>(Arrays.asList(trustedIds));
         trustedIdsList.addAll(Dash.getInstance().facetIds);
         trustedIdsList.add(readFacet());
@@ -141,16 +145,7 @@ public class UAFController {
     }
 
     private String readFacet() {
-        InputStream in = getClass().getResourceAsStream("config.properties");
-        String facetVal = "";
-        try {
-            Properties props = new Properties();
-            props.load(in);
-            facetVal = props.getProperty("facetId");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return facetVal.toString();
+        return facetId;
     }
 
     /**
@@ -163,7 +158,7 @@ public class UAFController {
     private String getAppId() {
         // You can get it dynamically.
         // It only works if your server is not behind a reverse proxy
-        return hostname + "v1/public/uaf/facets";
+        return hostname + "/v1/public/uaf/facets";
         // Or you can define it statically
 //		return "https://www.head2toes.org/fidouaf/v1/public/uaf/facets";
     }
@@ -172,7 +167,7 @@ public class UAFController {
     @PostMapping("/public/regResponse")
     public RegistrationRecord[] processRegResponse(@RequestBody String payload) {
         RegistrationRecord[] result = null;
-        if (! payload.isEmpty()) {
+        if (!payload.isEmpty()) {
             RegistrationResponse[] fromJson = (new Gson()).fromJson(payload,
                     RegistrationResponse[].class);
             Dash.getInstance().stats.put(Dash.LAST_REG_RES, fromJson);
@@ -182,6 +177,7 @@ public class UAFController {
             result = new ProcessResponse().processRegResponse(registrationResponse);
             if (result[0].status.equals("SUCCESS")) {
                 try {
+                    //TODO: 改使用DB
                     StorageImpl.getInstance().store(result);
                 } catch (DuplicateKeyException e) {
                     result = new RegistrationRecord[1];
@@ -192,7 +188,7 @@ public class UAFController {
                     result[0] = new RegistrationRecord();
                     result[0].status = "Error: Data couldn't be stored in DB";
                 }
-            }else{
+            } else {
                 //TODO Could be interesting refactor this method (and its callers) and modify return type to javax.ws.rs.core.Response and send Response.Status.PRECONDITION_FAILED error code.
                 result = new RegistrationRecord[1];
                 result[0] = new RegistrationRecord();
@@ -223,19 +219,19 @@ public class UAFController {
     }
 
     private void setAppId(String appId, OperationHeader header) {
-        if (appId == null || appId.isEmpty()){
+        if (appId == null || appId.isEmpty()) {
             return;
         }
-        String decodedAppId = new String (Base64.decodeBase64(appId));
+        String decodedAppId = new String(Base64.decodeBase64(appId));
         Facets facets = facets();
         if (facets == null || facets.trustedFacets == null || facets.trustedFacets.length == 0
-                || facets.trustedFacets[0] == null || facets.trustedFacets[0].ids == null){
+                || facets.trustedFacets[0] == null || facets.trustedFacets[0].ids == null) {
             return;
         }
         String[] ids = facets.trustedFacets[0].ids;
         for (int i = 0; i < ids.length; i++) {
 
-            if (decodedAppId.equals(ids[i])){
+            if (decodedAppId.equals(ids[i])) {
                 header.appID = decodedAppId;
                 break;
             }
@@ -367,7 +363,7 @@ public class UAFController {
                 servResp.statusCode = 1500;
                 servResp.Description = result[0].status;
             }
-        }else{
+        } else {
             servResp.Description = "Error: payload is empty";
         }
 
@@ -401,7 +397,7 @@ public class UAFController {
                 servResp.statusCode = 1500;
                 servResp.Description = result[0].status;
             }
-        }else{
+        } else {
             servResp.Description = "Error: payload is empty";
         }
 
@@ -513,7 +509,7 @@ public class UAFController {
                     servResp.Description = result[0].status;
                 }
             }
-        }else{
+        } else {
             servResp.Description = "Error: payload is empty";
         }
         return servResp;

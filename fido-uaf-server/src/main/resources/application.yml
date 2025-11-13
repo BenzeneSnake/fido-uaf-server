@@ -22,4 +22,5 @@ server:
 uaf:
   server:
     name: FIDO UAF Server
-    endpoint: http://localhost:8081
+    endpoint: http://xx.xx.xxx.xx:8081
+    facetId: apk-key-hash:YOUR_PHONE_MODEL
