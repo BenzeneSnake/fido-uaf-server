@@ -10,29 +10,31 @@ It builds upon and improves several open-source projects.
 This project is based on and incorporates code from:
 
 1. **webauthn_java_spring_demo** by jgrams
-   - Original repository: https://github.com/jgrams/webauthn_java_spring_demo
-   - Copyright (c) 2022 jgrams
-   - Licensed under the Apache License 2.0
-   - This serves as the base architecture for our WebAuthn implementation
+    - Original repository: https://github.com/jgrams/webauthn_java_spring_demo
+    - Copyright (c) 2022 jgrams
+    - Licensed under the Apache License 2.0
+    - This serves as the base architecture for our WebAuthn implementation
 
 2. **eBay UAF (Universal Authentication Framework)**
-   - Original repository: https://github.com/eBay/UAF
-   - Copyright (c) 2015 eBay Inc.
-   - Licensed under the Apache License, Version 2.0
-   - Provides the reference implementation of the FIDO UAF protocol.
-   - Portions of this project are derived from or based on the original eBay UAF implementation.
+    - Original repository: https://github.com/eBay/UAF
+    - Copyright (c) 2015 eBay Inc.
+    - Licensed under the Apache License, Version 2.0
+    - Provides the reference implementation of the FIDO UAF protocol.
+    - Portions of this project are derived from or based on the original eBay UAF implementation.
 
 All original works are used in accordance with their respective Apache 2.0 licenses.
 
 **Prerequisites:**
 
-**Java 21**: This project uses Java 21. If you don't have Java 21, you can install OpenJDK. Instructions are found on the [OpenJDK website](https://aws.amazon.com/tw/corretto/).
+**Java 21**: This project uses Java 21. If you don't have Java 21, you can install OpenJDK. Instructions are found on
+the [OpenJDK website](https://aws.amazon.com/tw/corretto/).
 
 * [Getting Started](#getting-started)
 * [Start the Apps](#start-the-apps)
 * [Links](#links)
 * [Help](#help)
 * [License](#license)
+
 ## Key Modifications
 
 This derivative work includes the following enhancements:
@@ -43,6 +45,19 @@ This derivative work includes the following enhancements:
 * **Modern architecture** with improved security and performance
 * **Enhanced API** with OpenAPI/Swagger documentation
 * **H2 database integration** for development and testing
+
+---
+
+## 🧩 Configuration Before Testing
+
+Before running the FIDO UAF Server or mobile client, you must update the configuration in application.yml:
+
+| Setting        | Description                                                                                                                                                             | Example                                 |
+|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|
+| **`endpoint`** | The base URL of your FIDO UAF Server. <br>When testing on a mobile device, replace `localhost` with your **computer’s IPv4 address** so the phone can reach the server. | `http://xx.xx.xxx.xx:8081`              |
+| **`facetId`**  | The unique Facet ID that identifies your mobile app. <br>For testing, you can set it to your **phone model name** or any unique identifier.                             | `android:apk-key-hash:YOUR_PHONE_MODEL` |
+
+---
 
 ## Getting Started
 
@@ -83,13 +98,16 @@ which is licensed under the [Apache License, Version 2.0](http://www.apache.org/
 
 All modifications made to the original source are noted within the code and documentation.
 © 2025 YourName. Licensed under the Apache License, Version 2.0.
+
 ### Important License Information
 
 This is a derivative work incorporating code from:
+
 - **jgrams/webauthn_java_spring_demo** (Apache 2.0)
 - **eBay/UAF** (Apache 2.0)
 
 All modifications and enhancements are also released under Apache 2.0. When using this code, you must:
+
 1. Retain all copyright notices from original works
 2. Include a copy of the Apache License 2.0
 3. State any significant modifications made to the original code
@@ -99,4 +117,5 @@ For detailed attribution and third-party notices, see the [LICENSE](LICENSE) fil
 
 ## Disclaimer
 
-This software is provided "AS IS" without warranty of any kind. The authors and contributors are not liable for any damages arising from the use of this software. See the LICENSE file for complete terms and conditions.
+This software is provided "AS IS" without warranty of any kind. The authors and contributors are not liable for any
+damages arising from the use of this software. See the LICENSE file for complete terms and conditions.
