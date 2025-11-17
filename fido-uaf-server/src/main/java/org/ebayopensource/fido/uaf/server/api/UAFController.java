@@ -57,6 +57,7 @@ public class UAFController {
     // 註冊請求
     @GetMapping("/public/regRequest/{username}")
     public RegistrationRequest[] getRegisReqPublic(@PathVariable String username) {
+        // FIDO UAF 規格要求：陣列裡只放一個dictionary
         RegistrationRequest[] regReq = new RegistrationRequest[1];
         regReq[0] = new FetchRequest(getAppId(), getAllowedAaids())
                 .getRegistrationRequest(username);
@@ -200,7 +201,7 @@ public class UAFController {
 
     //取消註冊
     @PostMapping("/public/deregRequest")
-    public String deregRequestPublic(String payload) {
+    public String deregRequestPublic(@RequestBody String payload) {
 
         return new DeregRequestProcessor().process(payload);
     }
