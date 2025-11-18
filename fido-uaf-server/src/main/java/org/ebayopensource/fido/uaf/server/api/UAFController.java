@@ -43,7 +43,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
 
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/fidouaf/v1")
 public class UAFController {
 
     @Value("${uaf.server.endpoint}")
@@ -159,7 +159,7 @@ public class UAFController {
     private String getAppId() {
         // You can get it dynamically.
         // It only works if your server is not behind a reverse proxy
-        return hostname + "/v1/public/uaf/facets";
+        return hostname + "/fidouaf/v1/public/uaf/facets";
         // Or you can define it statically
 //		return "https://www.head2toes.org/fidouaf/v1/public/uaf/facets";
     }
@@ -268,7 +268,7 @@ public class UAFController {
 
     // 認證回應
     @PostMapping("/public/authResponse")
-    public AuthenticatorRecord[] processAuthResponse(String payload) {
+    public AuthenticatorRecord[] processAuthResponse(@RequestBody String payload) {
         if (!payload.isEmpty()) {
             Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, payload);
             Gson gson = new Gson();
