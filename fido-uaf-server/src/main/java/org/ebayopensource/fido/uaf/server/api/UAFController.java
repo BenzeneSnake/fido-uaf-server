@@ -31,13 +31,16 @@ import org.ebayopensource.fido.uaf.core.storage.DuplicateKeyException;
 import org.ebayopensource.fido.uaf.core.storage.RegistrationRecord;
 import org.ebayopensource.fido.uaf.core.storage.SystemErrorException;
 import org.ebayopensource.fido.uaf.server.RPserver.msg.*;
+import org.ebayopensource.fido.uaf.server.config.UafServerConfig;
 import org.ebayopensource.fido.uaf.server.facets.Facets;
 import org.ebayopensource.fido.uaf.server.facets.TrustedFacets;
 import org.ebayopensource.fido.uaf.server.res.util.DeregRequestProcessor;
 import org.ebayopensource.fido.uaf.server.res.util.FetchRequest;
 import org.ebayopensource.fido.uaf.server.res.util.ProcessResponse;
 import org.ebayopensource.fido.uaf.server.res.util.StorageImpl;
+import org.ebayopensource.fido.uaf.server.infrastructure.repository.repositoryImpl.UAFStorageImpl;
 import org.ebayopensource.fido.uaf.server.stats.Dash;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
@@ -45,14 +48,20 @@ import org.springframework.http.MediaType;
 @RestController
 @RequestMapping("/fidouaf/v1")
 public class UAFController {
-
-    @Value("${uaf.server.endpoint}")
-    private String hostname;
-
-    @Value("${uaf.server.facetId}")
-    private String facetId;
-
     private final Gson gson = new Gson();
+
+    private final UAFStorageImpl uafStorage;
+    private final ProcessResponse processResponse;
+    private final DeregRequestProcessor deregRequestProcessor;
+
+    @Autowired
+    public UAFController(UAFStorageImpl uafStorage,
+                         ProcessResponse processResponse,
+                         DeregRequestProcessor deregRequestProcessor) {
+        this.uafStorage = uafStorage;
+        this.processResponse = processResponse;
+        this.deregRequestProcessor = deregRequestProcessor;
+    }
 
     // 註冊請求
     @GetMapping("/public/regRequest/{username}")
@@ -135,7 +144,7 @@ public class UAFController {
                 "https://openidconnect.ebay.com"};
         List<String> trustedIdsList = new ArrayList<String>(Arrays.asList(trustedIds));
         trustedIdsList.addAll(Dash.getInstance().facetIds);
-        trustedIdsList.add(readFacet());
+        trustedIdsList.add(UafServerConfig.getFacetId());// FOR TEST: 添加yml設定FacetId
         Facets facets = new Facets();
         facets.trustedFacets = new TrustedFacets[1];
         TrustedFacets trusted = new TrustedFacets();
@@ -145,9 +154,9 @@ public class UAFController {
         return facets;
     }
 
-    private String readFacet() {
-        return facetId;
-    }
+//    private String readFacet() {
+//        return facetId;
+//    }
 
     /**
      * The AppID is an identifier for a set of different Facets of a relying
@@ -159,7 +168,7 @@ public class UAFController {
     private String getAppId() {
         // You can get it dynamically.
         // It only works if your server is not behind a reverse proxy
-        return hostname + "/fidouaf/v1/public/uaf/facets";
+        return UafServerConfig.getAppId();
         // Or you can define it statically
 //		return "https://www.head2toes.org/fidouaf/v1/public/uaf/facets";
     }
@@ -175,11 +184,12 @@ public class UAFController {
             Dash.getInstance().history.add(fromJson);
 
             RegistrationResponse registrationResponse = fromJson[0];
-            result = new ProcessResponse().processRegResponse(registrationResponse);
+            result = processResponse.processRegResponse(registrationResponse);
             if (result[0].status.equals("SUCCESS")) {
                 try {
-                    //TODO: 改使用DB
-                    StorageImpl.getInstance().store(result);
+                    //StorageImpl.getInstance().store(result);// for test
+                    //  DB 儲存註冊記錄
+                    uafStorage.store(result);
                 } catch (DuplicateKeyException e) {
                     result = new RegistrationRecord[1];
                     result[0] = new RegistrationRecord();
@@ -203,7 +213,7 @@ public class UAFController {
     @PostMapping("/public/deregRequest")
     public String deregRequestPublic(@RequestBody String payload) {
 
-        return new DeregRequestProcessor().process(payload);
+        return deregRequestProcessor.process(payload);
     }
 
     @GetMapping("/public/authRequest")
@@ -276,7 +286,7 @@ public class UAFController {
                     AuthenticationResponse[].class);
             Dash.getInstance().stats.put(Dash.LAST_AUTH_RES, authResp);
             Dash.getInstance().history.add(authResp);
-            AuthenticatorRecord[] result = new ProcessResponse()
+            AuthenticatorRecord[] result = processResponse
                     .processAuthResponse(authResp[0]);
             return result;
         }

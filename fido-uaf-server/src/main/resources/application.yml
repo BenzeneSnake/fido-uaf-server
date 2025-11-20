@@ -24,3 +24,4 @@ uaf:
     name: FIDO UAF Server
     endpoint: http://xx.xx.xxx.xx:8081
     facetId: android:apk-key-hash:YOUR_PHONE_MODEL
+    trustedFacetsUrl: /fidouaf/v1/public/uaf/facets

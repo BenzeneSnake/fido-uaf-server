@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "uaf_server_data", indexes = {
-        @Index(name = "idx_username", columnList = "username"),
-        @Index(name = "idx_expires_at", columnList = "expires_at")
+        @Index(name = "idx_server_data_username", columnList = "username"),
+        @Index(name = "idx_server_data_expires_at", columnList = "expires_at")
 })
 @Data
 @Builder
