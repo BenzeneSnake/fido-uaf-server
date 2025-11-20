@@ -19,7 +19,9 @@ package org.ebayopensource.fido.uaf.server.res.util;
 import org.ebayopensource.fido.uaf.core.msg.DeregisterAuthenticator;
 import org.ebayopensource.fido.uaf.core.msg.DeregistrationRequest;
 import org.ebayopensource.fido.uaf.core.storage.AuthenticatorRecord;
+import org.ebayopensource.fido.uaf.server.infrastructure.repository.repositoryImpl.UAFStorageImpl;
 import org.ebayopensource.fido.uaf.server.stats.Dash;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
@@ -27,6 +29,13 @@ import com.google.gson.Gson;
 @Service
 public class DeregRequestProcessor {
 	private Gson gson = new Gson();
+
+	private final UAFStorageImpl uafStorage;
+
+	@Autowired
+	public DeregRequestProcessor(UAFStorageImpl uafStorage) {
+		this.uafStorage = uafStorage;
+	}
 
 	public String process(String payload) {
 		if (!payload.isEmpty()) {
@@ -41,7 +50,7 @@ public class DeregRequestProcessor {
 					authRecord.KeyID = authenticator.keyID;
 					try {
 						String Key = authRecord.toString();
-						StorageImpl.getInstance().deleteRegistrationRecord(Key);
+						uafStorage.deleteRegistrationRecord(Key);
 					} catch (Exception e) {
 						return "Failure: Problem in deleting record from local DB";
 					}

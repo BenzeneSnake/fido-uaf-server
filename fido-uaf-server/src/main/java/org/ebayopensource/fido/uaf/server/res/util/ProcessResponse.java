@@ -22,12 +22,21 @@ import org.ebayopensource.fido.uaf.core.ops.AuthenticationResponseProcessing;
 import org.ebayopensource.fido.uaf.core.ops.RegistrationResponseProcessing;
 import org.ebayopensource.fido.uaf.core.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.core.storage.RegistrationRecord;
+import org.ebayopensource.fido.uaf.server.infrastructure.repository.repositoryImpl.UAFStorageImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProcessResponse {
 
 	private static final int SERVER_DATA_EXPIRY_IN_MS = 5 * 60 * 1000;
+
+	private final UAFStorageImpl uafStorage;
+
+	@Autowired
+	public ProcessResponse(UAFStorageImpl uafStorage) {
+		this.uafStorage = uafStorage;
+	}
 
 	// Gson gson = new Gson ();
 
@@ -36,7 +45,7 @@ public class ProcessResponse {
 		try {
 			result = new AuthenticationResponseProcessing(
 					SERVER_DATA_EXPIRY_IN_MS, NotaryImpl.getInstance()).verify(
-					resp, StorageImpl.getInstance());
+					resp, uafStorage);
 		} catch (Exception e) {
 			System.out
 					.println("!!!!!!!!!!!!!!!!!!!..............................."
