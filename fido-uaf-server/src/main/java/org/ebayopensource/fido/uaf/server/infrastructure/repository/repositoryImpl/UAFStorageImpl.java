@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -151,9 +150,8 @@ public class UAFStorageImpl implements StorageInterface {
                     logger.warn("Skipping null record or record with null authenticator");
                     continue;
                 }
-
-                // For update, we simply save (JPA will merge if entity exists)
-                registrationRecordRepository.save(record);
+                //update SignCounter
+                registrationRecordRepository.updateSignCounterByAuthenticatorKey(record);
                 logger.info("Successfully updated registration record: username={}, AAID={}, KeyID={}",
                         record.username, record.authenticator.AAID, record.authenticator.KeyID);
             }

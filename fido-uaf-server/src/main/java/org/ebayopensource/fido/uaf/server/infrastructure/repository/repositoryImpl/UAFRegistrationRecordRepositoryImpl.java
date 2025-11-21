@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,6 +61,23 @@ public class UAFRegistrationRecordRepositoryImpl implements UAFRegistrationRecor
         } catch (Exception e) {
             logger.error("Failed to find registration record by key: {}", key, e);
             return Optional.empty();
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean updateSignCounterByAuthenticatorKey(RegistrationRecord record) throws Exception {
+        try {
+            String key = record.authenticator.toString();
+            String signCounter = record.SignCounter;
+            LocalDateTime now = LocalDateTime.now();
+            // 保存更新後的 Entity（JPA 識別到 ID 存在，會執行 UPDATE）
+            dao.updateSignCounterByAuthenticatorKey(key, signCounter, now);
+            logger.info("Successfully updated RegistrationRecord: key={} signCounter={}", key, signCounter);
+            return true;
+        } catch (Exception e) {
+            logger.error("Failed to update sign counter for key: {}", record.authenticator.toString(), e);
+            return false;
         }
     }
 

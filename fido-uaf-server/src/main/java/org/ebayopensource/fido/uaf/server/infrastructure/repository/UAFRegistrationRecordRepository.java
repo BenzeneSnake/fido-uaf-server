@@ -13,6 +13,7 @@ public interface UAFRegistrationRecordRepository {
 
     /**
      * Save a registration record
+     *
      * @param record the registration record to save
      * @return the saved registration record
      */
@@ -20,6 +21,7 @@ public interface UAFRegistrationRecordRepository {
 
     /**
      * Find registration record by authenticator key (AAID#KeyID)
+     *
      * @param key the authenticator key in format "AAID#KeyID"
      * @return Optional containing the registration record if found
      */
@@ -27,26 +29,38 @@ public interface UAFRegistrationRecordRepository {
 
     /**
      * Find all registration records for a username
+     *
      * @param username the username
      * @return list of registration records
      */
     List<RegistrationRecord> findByUsername(String username);
 
     /**
+     * update a registration record
+     *
+     * @param record RegistrationRecord
+     * @return the saved registration record
+     */
+    boolean updateSignCounterByAuthenticatorKey(RegistrationRecord record) throws Exception;
+
+    /**
      * Delete registration record by authenticator key
+     *
      * @param key the authenticator key in format "AAID#KeyID"
      */
     void deleteByAuthenticatorKey(String key);
 
     /**
      * Delete all registration records for a username
+     *
      * @param username the username
      */
     void deleteByUsername(String username);
 
     /**
      * Check if a registration record exists by AAID and KeyID
-     * @param aaid the AAID
+     *
+     * @param aaid  the AAID
      * @param keyId the KeyID
      * @return true if exists, false otherwise
      */

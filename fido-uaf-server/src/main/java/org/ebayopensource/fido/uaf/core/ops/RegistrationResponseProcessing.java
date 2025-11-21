@@ -25,12 +25,14 @@ import org.apache.commons.codec.binary.Base64;
 import org.ebayopensource.fido.uaf.core.crypto.CertificateValidator;
 import org.ebayopensource.fido.uaf.core.crypto.CertificateValidatorImpl;
 import org.ebayopensource.fido.uaf.core.crypto.Notary;
+import org.ebayopensource.fido.uaf.core.crypto.SignCounterValidator;
 import org.ebayopensource.fido.uaf.core.msg.AuthenticatorRegistrationAssertion;
 import org.ebayopensource.fido.uaf.core.msg.FinalChallengeParams;
 import org.ebayopensource.fido.uaf.core.msg.RegistrationResponse;
 import org.ebayopensource.fido.uaf.core.msg.Version;
 import org.ebayopensource.fido.uaf.core.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.core.storage.RegistrationRecord;
+import org.ebayopensource.fido.uaf.core.tlv.SignCounter;
 import org.ebayopensource.fido.uaf.core.tlv.Tag;
 import org.ebayopensource.fido.uaf.core.tlv.Tags;
 import org.ebayopensource.fido.uaf.core.tlv.TagsEnum;
@@ -47,6 +49,7 @@ public class RegistrationResponseProcessing {
     private Notary notary = null;
     private Gson gson = new Gson();
     private CertificateValidator certificateValidator;
+    private SignCounterValidator signCounterValidator;
 
     public RegistrationResponseProcessing() {
         this.certificateValidator = new CertificateValidatorImpl();
@@ -57,6 +60,7 @@ public class RegistrationResponseProcessing {
         this.serverDataExpiryInMs = serverDataExpiryInMs;
         this.notary = notary;
         this.certificateValidator = new CertificateValidatorImpl();
+        this.signCounterValidator = new SignCounterValidator();
     }
 
     public RegistrationResponseProcessing(long serverDataExpiryInMs,
@@ -112,6 +116,8 @@ public class RegistrationResponseProcessing {
             record.authenticator = authRecord;
             record.PublicKey = Base64.encodeBase64URLSafeString(tags.getTags()
                     .get(TagsEnum.TAG_PUB_KEY.id).value);
+            record.SignCounter = SignCounter.formatRegistrationCounter(
+                    tags.getTags().get(TagsEnum.TAG_COUNTERS.id).value);
             record.AuthenticatorVersion = getAuthenticatorVersion(tags);
             String fc = Base64.encodeBase64URLSafeString(tags.getTags().get(
                     TagsEnum.TAG_FINAL_CHALLENGE.id).value);
@@ -147,13 +153,18 @@ public class RegistrationResponseProcessing {
         record.attestSignature = Base64
                 .encodeBase64URLSafeString(signature.value);
         record.attestVerifiedStatus = "FAILED_VALIDATION_ATTEMPT";
-        // 4. 用證書驗證簽名 validate實作是用SHA256withEC，可覆寫
+        // 4. 驗證 counter（防止重放攻擊）
+        if (!signCounterValidator.validateRegistrationCounter(record)) {
+            record.attestVerifiedStatus = "FAILED_COUNTER_VALIDATION";
+        }
+        // 5. 用證書驗證簽名 validate實作是用SHA256withEC，可覆寫
         if (certificateValidator.validate(certBytes, signedBytes,
                 signature.value)) {
             record.attestVerifiedStatus = "VALID";
         } else {
             record.attestVerifiedStatus = "NOT_VERIFIED";
         }
+
     }
 
     private String getAuthenticatorVersion(Tags tags) {
