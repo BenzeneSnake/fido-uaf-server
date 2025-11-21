@@ -40,6 +40,7 @@ import org.ebayopensource.fido.uaf.core.crypto.NamedCurve;
 import org.ebayopensource.fido.uaf.core.crypto.Notary;
 import org.ebayopensource.fido.uaf.core.crypto.RSA;
 import org.ebayopensource.fido.uaf.core.crypto.SHA;
+import org.ebayopensource.fido.uaf.core.crypto.SignCounterValidator;
 import org.ebayopensource.fido.uaf.core.storage.AuthenticatorRecord;
 import org.ebayopensource.fido.uaf.core.storage.RegistrationRecord;
 import org.ebayopensource.fido.uaf.core.storage.StorageInterface;
@@ -54,16 +55,17 @@ public class AuthenticationResponseProcessing {
     private Logger logger = Logger.getLogger(this.getClass().getName());
     private long serverDataExpiryInMs;
     private Notary notary;
+    private SignCounterValidator signCounterValidator;
 
     public AuthenticationResponseProcessing() {
-
+        this.signCounterValidator = new SignCounterValidator();
     }
 
     public AuthenticationResponseProcessing(long serverDataExpiryInMs,
                                             Notary notary) {
         this.serverDataExpiryInMs = serverDataExpiryInMs;
         this.notary = notary;
-
+        this.signCounterValidator = new SignCounterValidator();
     }
 
     public AuthenticatorRecord[] verify(AuthenticationResponse response,
@@ -80,6 +82,7 @@ public class AuthenticationResponseProcessing {
         return result;
     }
 
+    //TODO:CODE太亂:很多TRY CATCH之後重購
     private AuthenticatorRecord processAssertions(
             AuthenticatorSignAssertion authenticatorSignAssertion,
             StorageInterface storage) {
@@ -121,6 +124,22 @@ public class AuthenticationResponseProcessing {
                 authRecord.status = "FAILED_SIGNATURE_VERIFICATION";
                 return authRecord;
             }
+
+            // 驗證 counter（防止重放攻擊）
+            try {
+                Tag counterTag = tags.getTags().get(TagsEnum.TAG_COUNTERS.id);
+                if (counterTag != null) {
+                    signCounterValidator.validateAuthenticationCounter(
+                            counterTag.value, authRecord.toString(), storage);
+                }
+            } catch (Exception e) {
+                logger.log(Level.WARNING,
+                        "Counter validation failed for authenticator: "
+                                + authRecord.toString(), e);
+                authRecord.status = "FAILED_COUNTER_VALIDATION";
+                return authRecord;
+            }
+
             authRecord.username = registrationRecord.username;
             authRecord.deviceId = registrationRecord.deviceId;
             authRecord.status = "SUCCESS";
