@@ -27,6 +27,7 @@ import java.security.SignatureException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
@@ -56,6 +57,7 @@ public class AuthenticationResponseProcessing {
     private Logger logger = Logger.getLogger(this.getClass().getName());
     private long serverDataExpiryInMs;
     private Notary notary;
+    private Gson gson = new Gson();
     private SignCounterValidator signCounterValidator;
 
     public AuthenticationResponseProcessing() {
@@ -257,8 +259,9 @@ public class AuthenticationResponseProcessing {
     }
 
     private FinalChallengeParams getFcp(AuthenticationResponse response) {
-        // TODO Auto-generated method stub
-        return null;
+        String fcp = new String(Base64.decodeBase64(response.fcParams
+                .getBytes()));
+        return gson.fromJson(fcp, FinalChallengeParams.class);
     }
 
     private void checkServerData(String serverDataB64,
