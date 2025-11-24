@@ -109,13 +109,6 @@ public class RegistrationResponseProcessing {
             //TLV -> Tags 解析並驗證 Assertion 結構
             Tags tags = parser
                     .parse(authenticatorRegistrationAssertion.assertion);
-            try {
-                // 驗證簽名
-                verifyAttestationSignature(tags, record);
-            } catch (Exception e) {
-                record.attestVerifiedStatus = "NOT_VERIFIED";
-            }
-
             AuthenticatorRecord authRecord = new AuthenticatorRecord();
             authRecord.AAID = new String(tags.getTags().get(
                     TagsEnum.TAG_AAID.id).value);
@@ -133,6 +126,12 @@ public class RegistrationResponseProcessing {
             String fc = Base64.encodeBase64URLSafeString(tags.getTags().get(
                     TagsEnum.TAG_FINAL_CHALLENGE.id).value);
             logger.log(Level.INFO, "FC: " + fc);
+            try {
+                // 驗證簽名
+                verifyAttestationSignature(tags, record);
+            } catch (Exception e) {
+                record.attestVerifiedStatus = "NOT_VERIFIED";
+            }
             if (record.status == null) {
                 record.status = "SUCCESS";
             }
