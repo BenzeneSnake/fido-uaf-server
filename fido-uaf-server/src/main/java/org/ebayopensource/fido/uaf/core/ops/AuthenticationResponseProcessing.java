@@ -49,6 +49,7 @@ import org.ebayopensource.fido.uaf.core.tlv.Tag;
 import org.ebayopensource.fido.uaf.core.tlv.Tags;
 import org.ebayopensource.fido.uaf.core.tlv.TagsEnum;
 import org.ebayopensource.fido.uaf.core.tlv.TlvAssertionParser;
+import org.ebayopensource.fido.uaf.server.config.UafServerConfig;
 
 public class AuthenticationResponseProcessing {
 
@@ -318,9 +319,30 @@ public class AuthenticationResponseProcessing {
         }
     }
 
-    private void checkFcp(FinalChallengeParams fcp) {
+    private void checkFcp(FinalChallengeParams fcp) throws Exception {
         // TODO Auto-generated method stub
+        //FinalChallengeParams fcp 這是 RP 自行定義的安全邏輯
 
+        validateAppId(fcp);
     }
 
+    private void validateAppId(FinalChallengeParams fcp) throws Exception {
+        // 檢查 appID
+        if (fcp.appID == null || fcp.appID.isEmpty()) {
+            throw new Exception("Missing appID in FinalChallengeParams");
+        }
+
+        // 驗證 appID 格式
+        // 如果是url
+        if (fcp.appID.startsWith("http")) {
+            // 必須是 https URL
+            // FOR 學習用，故註銷
+//            if (!fcp.appID.startsWith("https://")) {
+//                throw new Exception("Invalid appID format - must be https URL");
+//            }
+            if (!UafServerConfig.getAppId().equals(fcp.appID)) {
+                throw new Exception("Disallowed AppID:" + fcp.appID);
+            }
+        }
+    }
 }
