@@ -75,8 +75,12 @@ public class RegistrationResponseProcessing {
         checkAssertions(response);
         RegistrationRecord[] records = new RegistrationRecord[response.assertions.length];
 
+        //**請求層次驗證**
+        //檢查 UAF 協定版本是否可接受
         checkVersion(response.header.upv);
+        //驗證 ServerData 的簽名，驗證 timestamp 未過期，提取並驗證 challenge
         checkServerData(response.header.serverData, records);
+        //驗證 appID 格式正確，驗證 appID 是否在伺服器的允許清單中，驗證 facetID 是否在信任清單（Trusted Facet List）
         FinalChallengeParams fcp = getFcp(response);
         checkFcp(fcp);
         for (int i = 0; i < records.length; i++) {
@@ -86,6 +90,13 @@ public class RegistrationResponseProcessing {
         return records;
     }
 
+    /**
+     * Assertion 驗證
+     *
+     * @param authenticatorRegistrationAssertion
+     * @param record
+     * @return
+     */
     private RegistrationRecord processAssertions(
             AuthenticatorRegistrationAssertion authenticatorRegistrationAssertion,
             RegistrationRecord record) {
@@ -95,7 +106,7 @@ public class RegistrationResponseProcessing {
         }
         TlvAssertionParser parser = new TlvAssertionParser();
         try {
-            //TLV -> Tags
+            //TLV -> Tags 解析並驗證 Assertion 結構
             Tags tags = parser
                     .parse(authenticatorRegistrationAssertion.assertion);
             try {
@@ -153,6 +164,9 @@ public class RegistrationResponseProcessing {
         record.attestSignature = Base64
                 .encodeBase64URLSafeString(signature.value);
         record.attestVerifiedStatus = "FAILED_VALIDATION_ATTEMPT";
+        //TODO: 檢查 AAID 是否在伺服器支援的認證器清單中
+        //TODO: 驗證認證器是否符合 Policy 要求（如 KeyProtection、UserVerification 等）
+
         // 4. 驗證 counter（防止重放攻擊）
         if (!signCounterValidator.validateRegistrationCounter(record)) {
             record.attestVerifiedStatus = "FAILED_COUNTER_VALIDATION";
@@ -165,6 +179,7 @@ public class RegistrationResponseProcessing {
             record.attestVerifiedStatus = "NOT_VERIFIED";
         }
 
+
     }
 
     private String getAuthenticatorVersion(Tags tags) {
@@ -174,48 +189,16 @@ public class RegistrationResponseProcessing {
     }
 
     /**
-     * TODO:尚未檢查Assertions
-     * publicKey 是合法的
-     * attestation 證書有效
-     * authenticator 真的可信（參照 Metadata）
-     *
      * @param response
      * @throws Exception
      */
     private void checkAssertions(RegistrationResponse response)
             throws Exception {
-//        if (response.assertions != null && response.assertions.length > 0) {
-//            return;
-//        } else {
-//            throw new Exception("Missing assertions in registration response");
-//        }
-        if (response.assertions == null || response.assertions.length == 0) {
+        if (response.assertions != null && response.assertions.length > 0) {
+            return;
+        } else {
             throw new Exception("Missing assertions in registration response");
         }
-//        for (AuthenticatorRegistrationAssertion assertion : response.assertions) {
-//            //解析 assertion JSON / TLV 內容
-//            //建立AuthenticatorData 物件
-//            AuthenticatorData authData = parseAuthenticatorData(assertion);
-//            byte[] signatureBytes = assertion.getSignature();
-//            PublicKey publicKey = extractPublicKey(authData);
-//            X509Certificate attestationCert = extractAttestationCert(authData);
-//
-//            // 驗證 attestation 是否有效
-//            if (!verifyAttestation(attestationCert)) {
-//                throw new Exception("Attestation validation failed");
-//            }
-//
-//            // 驗證 signature（challenge + authenticatorData）
-//            byte[] signedData = assembleSignedData(response.header.serverData, authData);
-//            if (!verifySignature(signatureBytes, signedData, publicKey)) {
-//                throw new Exception("Signature verification failed");
-//            }
-//
-//            // 驗 counter / flags
-//            if (!verifyCounter(authData)) {
-//                throw new Exception("Counter verification failed");
-//            }
-//        }
     }
 
     private FinalChallengeParams getFcp(RegistrationResponse response) {
@@ -248,6 +231,7 @@ public class RegistrationResponseProcessing {
                 throw new ServerDataExpiredException();
             }
             setUsernameAndTimeStamp(username, timeStamp, records);
+            //TODO: 驗證 Final Challenge，確認 Final Challenge 的計算是否正確
         } catch (ServerDataExpiredException e) {
             setErrorStatus(records, "INVALID_SERVER_DATA_EXPIRED");
             throw new Exception("Invalid server data - Expired data");
@@ -308,7 +292,6 @@ public class RegistrationResponseProcessing {
         //FinalChallengeParams fcp 這是 RP 自行定義的安全邏輯
 
         validateAppId(fcp);
-
     }
 
     private void validateAppId(FinalChallengeParams fcp) throws Exception {
