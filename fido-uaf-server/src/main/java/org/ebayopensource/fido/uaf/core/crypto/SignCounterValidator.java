@@ -19,15 +19,16 @@ import java.util.logging.Logger;
  */
 public class SignCounterValidator {
 
+    private static final String registerCounter = "0.0";
     private static final Logger logger = Logger.getLogger(SignCounterValidator.class.getName());
 
     /**
      * Counter 處理流程
      *| 階段   | counterBytes        | record.SignCounter 格式 | 範例                          |
      *|-------|---------------------|------------------------|-------------------------------|
-     *| 註冊   | 8 bytes (sig + reg) | "0.1"                  | 從 counterBytes 解析兩個值      |
-     *| 認證 1 | 4 bytes (sig only)  | "1.1"                  | sig 從 counterBytes，reg 從 DB |
-     *| 認證 2 | 4 bytes (sig only)  | "2.1"                  | sig 從 counterBytes，reg 從 DB |
+     *| 註冊   | 8 bytes (sig + reg) | "0.0"                  | 從 counterBytes 解析兩個值      |
+     *| 認證 1 | 4 bytes (sig only)  | "1.0"                  | sig 從 counterBytes，reg 從 DB |
+     *| 認證 2 | 4 bytes (sig only)  | "2.0"                  | sig 從 counterBytes，reg 從 DB |
      */
 
     /**
@@ -46,7 +47,11 @@ public class SignCounterValidator {
             return false;
         }
 
-        // 註冊時的 counter 通常為 0，但也可能不為 0
+        // 註冊時的 counter 通常為 0
+        if (!registerCounter.equals(record.SignCounter)) {
+            logger.warning("Invalid registration counter: expected 0 for initial registration, but got " + record.SignCounter);
+            return false;
+        }
         // record.SignCounter 已經在 processAssertions 中被解析並設定為 "signatureCounter.registrationCounter" 格式
         logger.info("Registration - SignCounter: " + record.SignCounter);
 
