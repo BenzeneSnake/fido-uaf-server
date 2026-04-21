@@ -148,7 +148,7 @@ public class UAFController {
         Facets facets = new Facets();
         facets.trustedFacets = new TrustedFacets[1];
         TrustedFacets trusted = new TrustedFacets();
-        trusted.version = new Version(1, 0);
+        trusted.version = Version.v1_0();
         trusted.ids = trustedIdsList.toArray(new String[0]);
         facets.trustedFacets[0] = trusted;
         return facets;

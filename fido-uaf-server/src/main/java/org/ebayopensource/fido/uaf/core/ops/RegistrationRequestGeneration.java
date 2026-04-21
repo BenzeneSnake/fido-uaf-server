@@ -28,80 +28,80 @@ import org.ebayopensource.fido.uaf.core.msg.Version;
 
 public class RegistrationRequestGeneration {
 
-	public static final String APP_ID = "https://uaf.ebay.com/uaf/facets";
-	private String appId = APP_ID;
-	private String[] acceptedAaids;
+    public static final String APP_ID = "https://uaf.ebay.com/uaf/facets";
+    private String appId = APP_ID;
+    private String[] acceptedAaids;
 
-	public RegistrationRequestGeneration() {
+    public RegistrationRequestGeneration() {
 
-	}
+    }
 
-	public RegistrationRequestGeneration(String appId) {
-		this.appId = appId;
-	}
+    public RegistrationRequestGeneration(String appId) {
+        this.appId = appId;
+    }
 
-	public RegistrationRequestGeneration(String appId, String[] acceptedAaids) {
-		this.appId = appId;
-		this.acceptedAaids = acceptedAaids;
-	}
+    public RegistrationRequestGeneration(String appId, String[] acceptedAaids) {
+        this.appId = appId;
+        this.acceptedAaids = acceptedAaids;
+    }
 
-	public Policy constructAuthenticationPolicy() {
-		if (acceptedAaids == null) {
-			return null;
-		}
-		Policy p = new Policy();
-		MatchCriteria[][] accepted = new MatchCriteria[acceptedAaids.length][1];
-		for (int i = 0; i < accepted.length; i++) {
-			MatchCriteria[] a = new MatchCriteria[1];
-			MatchCriteria matchCriteria = new MatchCriteria();
-			matchCriteria.aaid = new String[1];
-			matchCriteria.aaid[0] = acceptedAaids[i];
-			a[0] = matchCriteria;
-			accepted[i] = a;
-		}
-		p.accepted = accepted;
-		return p;
-	}
+    public Policy constructAuthenticationPolicy() {
+        if (acceptedAaids == null) {
+            return null;
+        }
+        Policy p = new Policy();
+        MatchCriteria[][] accepted = new MatchCriteria[acceptedAaids.length][1];
+        for (int i = 0; i < accepted.length; i++) {
+            MatchCriteria[] a = new MatchCriteria[1];
+            MatchCriteria matchCriteria = new MatchCriteria();
+            matchCriteria.aaid = new String[1];
+            matchCriteria.aaid[0] = acceptedAaids[i];
+            a[0] = matchCriteria;
+            accepted[i] = a;
+        }
+        p.accepted = accepted;
+        return p;
+    }
 
-	public RegistrationRequest createRegistrationRequest(String username,
-														 Notary notary) {
-		String challenge = generateChallenge();
-		String serverDataString = generateServerData(username, challenge,
-				notary);
-		return createRegistrationRequest(username, serverDataString, challenge);
-	}
+    public RegistrationRequest createRegistrationRequest(String username,
+                                                         Notary notary) {
+        String challenge = generateChallenge();
+        String serverDataString = generateServerData(username, challenge,
+                notary);
+        return createRegistrationRequest(username, serverDataString, challenge);
+    }
 
-	private String generateServerData(String username, String challenge,
-			Notary notary) {
-		String dataToSign = Base64.encodeBase64URLSafeString(("" + System
-				.currentTimeMillis()).getBytes())
-				+ "."
-				+ Base64.encodeBase64URLSafeString(username.getBytes())
-				+ "."
-				+ Base64.encodeBase64URLSafeString(challenge.getBytes());
-		String signature = notary.sign(dataToSign);
+    private String generateServerData(String username, String challenge,
+                                      Notary notary) {
+        String dataToSign = Base64.encodeBase64URLSafeString(("" + System
+                .currentTimeMillis()).getBytes())
+                + "."
+                + Base64.encodeBase64URLSafeString(username.getBytes())
+                + "."
+                + Base64.encodeBase64URLSafeString(challenge.getBytes());
+        String signature = notary.sign(dataToSign);
 
-		return Base64.encodeBase64URLSafeString((signature + "." + dataToSign)
-				.getBytes());
-	}
+        return Base64.encodeBase64URLSafeString((signature + "." + dataToSign)
+                .getBytes());
+    }
 
-	private RegistrationRequest createRegistrationRequest(String username,
-			String serverData, String challenge) {
-		RegistrationRequest regRequest = new RegistrationRequest();
-		OperationHeader header = new OperationHeader();
-		header.serverData = serverData;
-		regRequest.header = header;
-		regRequest.header.op = Operation.Reg;
-		regRequest.header.appID = appId;
-		regRequest.header.upv = new Version(1, 0);
-		regRequest.challenge = challenge;
-		regRequest.policy = constructAuthenticationPolicy();
-		regRequest.username = username;
-		return regRequest;
-	}
+    private RegistrationRequest createRegistrationRequest(String username,
+                                                          String serverData, String challenge) {
+        RegistrationRequest regRequest = new RegistrationRequest();
+        OperationHeader header = new OperationHeader();
+        header.serverData = serverData;
+        regRequest.header = header;
+        regRequest.header.op = Operation.Reg;
+        regRequest.header.appID = appId;
+        regRequest.header.upv = Version.v1_0();
+        regRequest.challenge = challenge;
+        regRequest.policy = constructAuthenticationPolicy();
+        regRequest.username = username;
+        return regRequest;
+    }
 
-	private String generateChallenge() {
-		return Base64.encodeBase64URLSafeString(BCrypt.gensalt().getBytes());
-	}
+    private String generateChallenge() {
+        return Base64.encodeBase64URLSafeString(BCrypt.gensalt().getBytes());
+    }
 
 }

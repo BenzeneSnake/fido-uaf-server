@@ -314,11 +314,11 @@ public class AuthenticationResponseProcessing {
     }
 
     private void checkVersion(Version upv) throws Exception {
-        if (upv.major == 1 && upv.minor == 0) {
+        if (upv.major() == Version.v1_0().major() && upv.minor() == Version.v1_0().minor()) {
             return;
         } else {
-            throw new Exception("Invalid version: " + upv.major + "."
-                    + upv.minor);
+            throw new Exception("Invalid version: " + upv.major() + "."
+                    + upv.minor());
         }
     }
 

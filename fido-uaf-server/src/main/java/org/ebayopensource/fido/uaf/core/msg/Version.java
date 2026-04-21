@@ -16,12 +16,16 @@
 
 package org.ebayopensource.fido.uaf.core.msg;
 
-public class Version {
-    public int major;
-    public int minor;
-    
-    public Version (int major, int minor){
-		this.major = major;
-		this.minor = minor;
+public record Version(int major, int minor) {
+    public static Version v1_0() {
+        return new Version(1, 0);
+    }
+
+    public static Version v1_1() {
+        return new Version(1, 1);
+    }
+
+    public static Version v1_2() {
+        return new Version(1, 2);
     }
 }
