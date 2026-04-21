@@ -268,7 +268,7 @@ public class UAFController {
     }
 
     public AuthenticationRequest[] getAuthReqObj() {
-        AuthenticationRequest[] ret = new AuthenticationRequest[1];
+        AuthenticationRequest[] ret = new AuthenticationRequest[1];//fido規定，故意開一個「1格的空陣列」
         ret[0] = new FetchRequest(getAppId(), getAllowedAaids())
                 .getAuthenticationRequest();
         Dash.getInstance().stats.put(Dash.LAST_AUTH_REQ, ret);

@@ -44,18 +44,18 @@ public class AuthenticationRequestGeneration {
     }
 
     public AuthenticationRequest createAuthenticationRequest(Notary notary) {
-        AuthenticationRequest authRequest = new AuthenticationRequest();
-        OperationHeader header = new OperationHeader();
-        authRequest.challenge = generateChallenge();
-        header.serverData = generateServerData(authRequest.challenge, notary);
-        authRequest.header = header;
-        authRequest.header.op = Operation.Auth;
-        authRequest.header.appID = appId;
-        authRequest.header.upv = Version.v1_0();
-
-        authRequest.policy = constructAuthenticationPolicy();
-
-        return authRequest;
+        String challenge = generateChallenge();
+        OperationHeader header = OperationHeader.builder()
+                .upv(Version.v1_0())
+                .op(Operation.Auth)
+                .appID(appId)
+                .serverData(generateServerData(challenge, notary))
+                .build();
+        return AuthenticationRequest.builder()
+                .header(header)
+                .challenge(challenge)
+                .policy(constructAuthenticationPolicy())
+                .build();
     }
 
     private String generateChallenge() {

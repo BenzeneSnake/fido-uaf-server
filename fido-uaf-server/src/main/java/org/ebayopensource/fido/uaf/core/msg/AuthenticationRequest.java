@@ -16,9 +16,14 @@
 
 package org.ebayopensource.fido.uaf.core.msg;
 
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
 public class AuthenticationRequest {
-	public OperationHeader header;
-	public String challenge;
-	public Transaction[] transaction;
-	public Policy policy;
+    public OperationHeader header;
+    public String challenge;
+    public Transaction[] transaction;
+    public Policy policy;
 }

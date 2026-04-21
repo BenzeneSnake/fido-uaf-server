@@ -88,12 +88,13 @@ public class RegistrationRequestGeneration {
     private RegistrationRequest createRegistrationRequest(String username,
                                                           String serverData, String challenge) {
         RegistrationRequest regRequest = new RegistrationRequest();
-        OperationHeader header = new OperationHeader();
+        OperationHeader header = OperationHeader.builder()
+                .upv(Version.v1_0())
+                .op(Operation.Reg)
+                .appID(appId)
+                .build();
         header.serverData = serverData;
         regRequest.header = header;
-        regRequest.header.op = Operation.Reg;
-        regRequest.header.appID = appId;
-        regRequest.header.upv = Version.v1_0();
         regRequest.challenge = challenge;
         regRequest.policy = constructAuthenticationPolicy();
         regRequest.username = username;
