@@ -16,10 +16,15 @@
 
 package org.ebayopensource.fido.uaf.core.msg;
 
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
 public class OperationHeader {
-	public Version upv;
-	public Operation op;
-	public String appID;
-	public String serverData;
-	//public Extension[] exts;
+    public Version upv;
+    public Operation op;
+    public String appID;
+    public String serverData;
+    //public Extension[] exts;
 }
