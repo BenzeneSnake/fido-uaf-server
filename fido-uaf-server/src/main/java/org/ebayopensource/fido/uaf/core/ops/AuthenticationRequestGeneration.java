@@ -28,67 +28,67 @@ import org.ebayopensource.fido.uaf.core.msg.Version;
 
 public class AuthenticationRequestGeneration {
 
-	private String appId = RegistrationRequestGeneration.APP_ID;
-	private String[] acceptedAaids = null;
+    private String appId = RegistrationRequestGeneration.APP_ID;
+    private String[] acceptedAaids = null;
 
-	public AuthenticationRequestGeneration() {
-	}
+    public AuthenticationRequestGeneration() {
+    }
 
-	public AuthenticationRequestGeneration(String appId) {
-		this.appId = appId;
-	}
+    public AuthenticationRequestGeneration(String appId) {
+        this.appId = appId;
+    }
 
-	public AuthenticationRequestGeneration(String appId, String[] acceptedAaids) {
-		this.appId = appId;
-		this.acceptedAaids = acceptedAaids;
-	}
+    public AuthenticationRequestGeneration(String appId, String[] acceptedAaids) {
+        this.appId = appId;
+        this.acceptedAaids = acceptedAaids;
+    }
 
-	public AuthenticationRequest createAuthenticationRequest(Notary notary) {
-		AuthenticationRequest authRequest = new AuthenticationRequest();
-		OperationHeader header = new OperationHeader();
-		authRequest.challenge = generateChallenge();
-		header.serverData = generateServerData(authRequest.challenge, notary);
-		authRequest.header = header;
-		authRequest.header.op = Operation.Auth;
-		authRequest.header.appID = appId;
-		authRequest.header.upv = new Version(1, 0);
+    public AuthenticationRequest createAuthenticationRequest(Notary notary) {
+        AuthenticationRequest authRequest = new AuthenticationRequest();
+        OperationHeader header = new OperationHeader();
+        authRequest.challenge = generateChallenge();
+        header.serverData = generateServerData(authRequest.challenge, notary);
+        authRequest.header = header;
+        authRequest.header.op = Operation.Auth;
+        authRequest.header.appID = appId;
+        authRequest.header.upv = Version.v1_0();
 
-		authRequest.policy = constructAuthenticationPolicy();
+        authRequest.policy = constructAuthenticationPolicy();
 
-		return authRequest;
-	}
+        return authRequest;
+    }
 
-	private String generateChallenge() {
-		return Base64.encodeBase64URLSafeString(BCrypt.gensalt().getBytes());
-	}
+    private String generateChallenge() {
+        return Base64.encodeBase64URLSafeString(BCrypt.gensalt().getBytes());
+    }
 
-	private String generateServerData(String challenge, Notary notary) {
-		String dataToSign = Base64.encodeBase64URLSafeString(("" + System
-				.currentTimeMillis()).getBytes())
-				+ "."
-				+ Base64.encodeBase64URLSafeString(challenge.getBytes());
-		String signature = notary.sign(dataToSign);
+    private String generateServerData(String challenge, Notary notary) {
+        String dataToSign = Base64.encodeBase64URLSafeString(("" + System
+                .currentTimeMillis()).getBytes())
+                + "."
+                + Base64.encodeBase64URLSafeString(challenge.getBytes());
+        String signature = notary.sign(dataToSign);
 
-		return Base64.encodeBase64URLSafeString((signature + "." + dataToSign)
-				.getBytes());
-	}
+        return Base64.encodeBase64URLSafeString((signature + "." + dataToSign)
+                .getBytes());
+    }
 
-	public Policy constructAuthenticationPolicy() {
-		if (acceptedAaids == null) {
-			return null;
-		}
-		Policy p = new Policy();
-		MatchCriteria[][] accepted = new MatchCriteria[acceptedAaids.length][1];
-		for (int i = 0; i < accepted.length; i++) {
-			MatchCriteria[] a = new MatchCriteria[1];
-			MatchCriteria matchCriteria = new MatchCriteria();
-			matchCriteria.aaid = new String[1];
-			matchCriteria.aaid[0] = acceptedAaids[i];
-			a[0] = matchCriteria;
-			accepted[i] = a;
-		}
-		p.accepted = accepted;
-		return p;
-	}
+    public Policy constructAuthenticationPolicy() {
+        if (acceptedAaids == null) {
+            return null;
+        }
+        Policy p = new Policy();
+        MatchCriteria[][] accepted = new MatchCriteria[acceptedAaids.length][1];
+        for (int i = 0; i < accepted.length; i++) {
+            MatchCriteria[] a = new MatchCriteria[1];
+            MatchCriteria matchCriteria = new MatchCriteria();
+            matchCriteria.aaid = new String[1];
+            matchCriteria.aaid[0] = acceptedAaids[i];
+            a[0] = matchCriteria;
+            accepted[i] = a;
+        }
+        p.accepted = accepted;
+        return p;
+    }
 
 }
