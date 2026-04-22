@@ -68,15 +68,62 @@ git clone https://github.com/BenzeneSnake/fido-uaf-server
 cd fido-uaf-server
 ```
 
-## Start the Apps
+## Related Repositories
 
-To install all of its dependencies and the app, run:
+This project is the backend server. The full system consists of the following components:
 
-```bash
-./mvnw spring-boot:run
+| Repository | Description | Protocol |
+|---|---|---|
+| **[fido-uaf-server](https://github.com/BenzeneSnake/fido-uaf-server)** *(this repo)* | Spring Boot backend for both FIDO UAF and WebAuthn | UAF + WebAuthn |
+| **[fido-uaf-client](https://github.com/BenzeneSnake/fido-uaf-client)** | Android mobile client that performs UAF registration and authentication | FIDO UAF 1.0 |
+| **[angular-frontend](https://github.com/BenzeneSnake/angular-frontend)** | Angular web frontend for WebAuthn passkey registration and login | WebAuthn / FIDO2 |
+
+### How They Fit Together
+
+```
+┌─────────────────────────┐        ┌──────────────────────────────────────┐
+│  Android App            │        │  fido-uaf-server (this repo)         │
+│  fido-uaf-client        │◄──────►│  FIDO UAF Server  (port 8081)        │
+│  (FIDO UAF 1.0)         │        │                                      │
+└─────────────────────────┘        │  WebAuthn Backend (port 8080)        │
+                                   └──────────────────────────────────────┘
+┌─────────────────────────┐                          ▲
+│  Browser / Web App      │                          │
+│  angular-frontend       │◄─────────────────────────┘
+│  (WebAuthn / FIDO2)     │
+└─────────────────────────┘
 ```
 
-You can now test the application by opening http://localhost:8080
+**FIDO UAF flow:** The Android client (`fido-uaf-client`) communicates with the UAF Server on port 8081 to register and authenticate using device biometrics or PIN. Make sure to configure `endpoint` and `facetId` in `application.yml` before testing with a real device.
+
+**WebAuthn flow:** The Angular frontend (`angular-frontend`) communicates with the WebAuthn backend on port 8080 to register and authenticate using passkeys (platform authenticators or security keys).
+
+---
+
+## Start the Apps
+
+This project contains two modules. Start each one in a separate terminal:
+
+**FIDO UAF Server** (port 8081):
+
+```bash
+./mvnw -pl fido-uaf-server spring-boot:run
+```
+
+API docs available at http://localhost:8081/swagger-ui.html
+
+**FIDO WebAuthn** (port 8080):
+
+```bash
+./mvnw -pl webauthn-app spring-boot:run
+```
+
+API docs available at http://localhost:8080/swagger-ui.html
+
+Then clone and start the corresponding client for end-to-end testing:
+
+- **UAF mobile client:** see [fido-uaf-client](https://github.com/BenzeneSnake/fido-uaf-client) for Android setup instructions
+- **WebAuthn frontend:** see [angular-frontend](https://github.com/BenzeneSnake/angular-frontend) for Angular setup instructions
 
 ## Dependencies
 
