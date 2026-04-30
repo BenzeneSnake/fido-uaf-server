@@ -103,10 +103,16 @@ public class UAFController {
      * that all share the same characteristics, and which a Relying Party can use
      * to look up an Attestation Public Key and Authenticator Metadata for the device.
      * The first 4 characters of the AAID are the vendorID.
+     * <p>
+     * NOTE:
+     * In production, AAIDs should not be hardcoded.
+     * Instead, fetch the FIDO Metadata Service (MDS v3) BLOB (JWT),
+     * verify its signature using the trusted root certificate,
+     * decode the payload, and extract AAIDs dynamically from metadata entries.
+     * Only authenticators with valid and non-revoked status should be trusted.
      *
      * @return list of allowed AAID - Authenticator Attestation ID.
      */
-    // 驗證伺服器（Server）端對 Authenticator 身分的驗證白名單機制
     private String[] getAllowedAaids() {
         String[] ret = {"EBA0#0001", "0015#0001", "0012#0002", "0010#0001",
                 "4e4e#0001", "5143#0001", "0011#0701", "0013#0001",
